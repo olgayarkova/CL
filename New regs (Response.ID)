@@ -1,0 +1,72 @@
+## Set up R
+
+Sys.getlocale("LC_TIME"); Sys.setlocale("LC_TIME", "C")
+## Open old base
+# source('Trim.R')
+data.old <- read.csv('CLR2018.Rouletted2.csv', stringsAsFactors = FALSE, encoding = 'UTF-8')
+#data.old <- data.old[, -1]
+colnames(data.old)[1] <- 'Response.ID'
+
+## Open new base
+# source('Trim.R')
+data <- read.csv('Russia2903.csv', stringsAsFactors = FALSE, encoding = 'UTF-8')
+#data <- data[, -1]
+
+## Clean up the data
+data <- subset(data, Status == 'Complete')
+data <- data[data$Cap.Name != 'Тест',]
+data <- data[data$Cap.Name != 'тест',]
+data <- data[data$Cap.Name != 'test',]
+data <- data[data$Cap.Name != 'Test',]
+data <- data[data$Cap.Email !='m.yunusova@changellenge.ru',]
+data <- data[data$Cap.Email !='l.sbitneva@changellenge.ru',]
+data <- data[data$Cap.Email !='o.yarkova@changellenge.ru',]
+data <- data[data$Cap.Email !='v.birindzhyan@changellenge.com',]
+data <- data[data$Cap.Email !='ladasbitneva@gmail.com',]
+data <- data[data$Cap.Email !='sbitneva.lada@mail.ru',]
+data <- data[data$Cap.Email !='ollga.yarkova@gmail.com',]
+data <- data[data$Cap.Email !='flamingo-super@narod.ru',]
+
+## Correct variables
+colnames(data)[32] <- 'Team.TR'
+colnames(data)[19] <- 'IP.City'
+data$Team.TR <- data$Team.TR == ''
+
+
+
+## Convert dataset into long form
+ind.cap <- (1:ncol(data))[substr(colnames(data), 1, 3) == "Cap"]
+ind.team <- (1:ncol(data))[substr(colnames(data), 1, 3) == "Tea"]
+ind.mem1 <- (1:ncol(data))[substr(colnames(data), 1, 7) == "Member1"]
+ind.mem2 <- (1:ncol(data))[substr(colnames(data), 1, 7) == "Member2"]
+ind.mem3 <- (1:ncol(data))[substr(colnames(data), 1, 7) == "Member3"]
+ind.mem4 <- (1:ncol(data))[substr(colnames(data), 1, 7) == "Member4"]
+ind.tech <- 1:(min(ind.cap)-1)
+
+vars <- colnames(data[,c(ind.tech, ind.cap, ind.team)])
+vars <- c(vars, substr(colnames(data[,ind.mem1]), 9, max(nchar(colnames(data)))))
+
+data.mem1 <- data[, c(ind.tech, ind.cap, ind.team, ind.mem1)]
+data.mem2 <- data[, c(ind.tech, ind.cap, ind.team, ind.mem2)]
+data.mem3 <- data[, c(ind.tech, ind.cap, ind.team, ind.mem3)]
+data.mem4 <- data[, c(ind.tech, ind.cap, ind.team, ind.mem4)]
+colnames(data.mem1) <- vars
+colnames(data.mem2) <- vars
+colnames(data.mem3) <- vars
+colnames(data.mem4) <- vars
+
+data.long <- rbind(data.mem1, data.mem2, data.mem3, data.mem4)
+
+data.long <- data.long[data.long$Name != '',]
+
+## Convert date format in NEW
+data.long$Date.Submitted <- as.POSIXct(as.character(data.long$Date.Submitted), format="%e %B %Y %H:%M:%S")
+data.long$Time.Started <- as.POSIXct(as.character(data.long$Time.Started), format="%e %B %Y %H:%M:%S")
+
+data.ordered <- data.long[order(data.long$Date.Submitted),]
+
+
+##Select only new rows
+data.new <- subset(data.ordered, Response.ID > max(data.old$Response.ID))
+data.new <- subset(data.new, Team.Section == 'Английская')
+write.csv(data.new, 'CupRussiaNewEng.csv')
