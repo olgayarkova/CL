@@ -1,0 +1,40 @@
+## Set up R
+
+## Import data
+# source('Trim.R')
+data <- read.csv('data.csv', stringsAsFactors = FALSE, encoding = 'UTF-8')
+#data <- data[, -1]
+
+## Clean up the data
+data <- subset(data, Status == 'Partial')
+data <- data[data$Cap.Name != 'Тест',]
+data <- data[data$Cap.Name != 'тест',]
+data <- data[data$Cap.Name != 'test',]
+data <- data[data$Cap.Name != 'Test',]
+
+
+## Convert dataset into long form
+ind.cap <- (1:ncol(data))[substr(colnames(data), 1, 3) == "Cap"]
+ind.team <- (1:ncol(data))[substr(colnames(data), 1, 3) == "Tea"]
+ind.mem1 <- (1:ncol(data))[substr(colnames(data), 1, 7) == "Member1"]
+ind.mem2 <- (1:ncol(data))[substr(colnames(data), 1, 7) == "Member2"]
+ind.mem3 <- (1:ncol(data))[substr(colnames(data), 1, 7) == "Member3"]
+ind.mem4 <- (1:ncol(data))[substr(colnames(data), 1, 7) == "Member4"]
+ind.tech <- 1:(min(ind.cap)-1)
+
+vars <- colnames(data[,c(ind.tech, ind.cap, ind.team)])
+vars <- c(vars, substr(colnames(data[,ind.mem1]), 9, max(nchar(colnames(data)))))
+
+data.mem1 <- data[, c(ind.tech, ind.cap, ind.team, ind.mem1)]
+data.mem2 <- data[, c(ind.tech, ind.cap, ind.team, ind.mem2)]
+data.mem3 <- data[, c(ind.tech, ind.cap, ind.team, ind.mem3)]
+data.mem4 <- data[, c(ind.tech, ind.cap, ind.team, ind.mem4)]
+colnames(data.mem1) <- vars
+colnames(data.mem2) <- vars
+colnames(data.mem3) <- vars
+colnames(data.mem4) <- vars
+
+data.long <- rbind(data.mem1, data.mem2, data.mem3, data.mem4)
+
+
+write.csv(data.long, 'orderedpartials.csv')
