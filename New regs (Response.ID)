@@ -7,6 +7,12 @@ data.old <- read.csv('CLR2018.Rouletted2.csv', stringsAsFactors = FALSE, encodin
 #data.old <- data.old[, -1]
 colnames(data.old)[1] <- 'Response.ID'
 
+## Data format in OLD
+#data.old$Date.Submitted <- as.POSIXct(as.character(data.old$Date.Submitted), format="%e %B %Y %H:%M:%S")
+#data.old$Time.Started <- as.POSIXct(as.character(data.old$Time.Started), format="%e %B %Y %H:%M:%S")
+data.old$Date.Submitted <- as.POSIXct(as.character(data.old$Date.Submitted), format="%d.%m.%Y %H:%M")
+data.old$Time.Started <- as.POSIXct(as.character(data.old$Time.Started), format="%d.%m.%Y %H:%M")
+
 ## Open new base
 # source('Trim.R')
 data <- read.csv('Russia2903.csv', stringsAsFactors = FALSE, encoding = 'UTF-8')
